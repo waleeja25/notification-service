@@ -24,8 +24,14 @@ async function bootstrap() {
         urls: [rabbitmqUrl],
         queue: rabbitmqQueue,
 
+        noAck: false,
+
         queueOptions: {
           durable: true,
+          arguments: {
+            'x-dead-letter-exchange': 'notification_dlx',
+            'x-dead-letter-routing-key': 'notification.dead',
+          },
         },
       },
     },
