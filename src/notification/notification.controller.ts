@@ -3,6 +3,7 @@ import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 
 import { NotificationService } from './notification.service';
 import { RabbitMQRetryService } from './rabbitmq';
+import { EVENT_TYPES } from './constants/event-type.constants';
 
 import type { OrderCreatedEvent, OrderDeletedEvent } from './events';
 
@@ -13,7 +14,7 @@ export class NotificationController {
     private readonly rabbitMQRetryService: RabbitMQRetryService,
   ) {}
 
-  @EventPattern('order.created')
+  @EventPattern(EVENT_TYPES.ORDER_CREATED)
   handleOrderCreated(
     @Payload() event: OrderCreatedEvent,
     @Ctx() context: RmqContext,
@@ -22,7 +23,7 @@ export class NotificationController {
       this.notificationService.handleOrderCreated(event),
     );
   }
-  @EventPattern('order.deleted')
+  @EventPattern(EVENT_TYPES.ORDER_DELETED)
   handleOrderDeleted(
     @Payload() event: OrderDeletedEvent,
     @Ctx() context: RmqContext,
