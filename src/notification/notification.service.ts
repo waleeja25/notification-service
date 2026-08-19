@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { OrderCreatedEvent } from './events';
+import { OrderCreatedEvent, OrderDeletedEvent } from './events';
 
 @Injectable()
 export class NotificationService {
@@ -7,7 +7,12 @@ export class NotificationService {
 
   handleOrderCreated(event: OrderCreatedEvent): void {
     this.logger.log(
-      `Notifying user ${event.userId} about order ${event.orderId}`,
+      `Notification: Order #${event.orderId} has been successfully placed for user ${event.userId}.`,
+    );
+  }
+  handleOrderDeleted(event: OrderDeletedEvent): void {
+    this.logger.log(
+      `Notification: Your order #${event.orderId} has been cancelled.`,
     );
   }
 }
