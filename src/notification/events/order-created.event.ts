@@ -1,4 +1,6 @@
-export interface OrderCreatedEvent {
-  orderId: number;
-  userId: number;
+import { IsInt, IsPositive } from 'class-validator';
+
+export class OrderCreatedEvent {
+  @IsInt() @IsPositive() orderId!: number;
+  @IsInt() @IsPositive() userId!: number;
 }

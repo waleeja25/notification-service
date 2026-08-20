@@ -1,43 +1,36 @@
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { MicroserviceOptions, RpcException } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
+import { ValidationPipe } from '@nestjs/common';
+import { ValidationError } from 'class-validator';
 
 import { AppModule } from './app.module';
-import { AppConfigModule } from './config/config.module';
+import { getRabbitMQOptions } from './rabbitmq';
 
 async function bootstrap() {
-  const configContext =
-    await NestFactory.createApplicationContext(AppConfigModule);
-  const configService = configContext.get(ConfigService);
+  const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
-  const rabbitmqUrl = configService.getOrThrow<string>('rabbitmq.url');
-  const rabbitmqQueue = configService.getOrThrow<string>('rabbitmq.queue');
-
-  await configContext.close();
-
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    AppModule,
-    {
-      transport: Transport.RMQ,
-
-      options: {
-        urls: [rabbitmqUrl],
-        queue: rabbitmqQueue,
-
-        noAck: false,
-
-        queueOptions: {
-          durable: true,
-          arguments: {
-            'x-dead-letter-exchange': 'notification_dlx',
-            'x-dead-letter-routing-key': 'notification.dead',
-          },
-        },
-      },
-    },
+  app.connectMicroservice<MicroserviceOptions>(
+    getRabbitMQOptions(configService),
+    { inheritAppConfig: true },
   );
 
-  await app.listen();
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      exceptionFactory: (errors: ValidationError[]) =>
+        new RpcException(
+          errors
+            .flatMap((error) => Object.values(error.constraints ?? {}))
+            .join('; '),
+        ),
+    }),
+  );
+
+  await app.startAllMicroservices();
 
   console.log('Notification Service is listening to RabbitMQ');
 }

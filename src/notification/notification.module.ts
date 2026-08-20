@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { NotificationController } from './notification.controller';
 import { NotificationService } from './notification.service';
-import { RabbitMQRetryService } from './rabbitmq';
+import { RabbitMQRetryService } from '../rabbitmq';
 
 @Module({
   controllers: [NotificationController],

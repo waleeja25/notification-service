@@ -9,11 +9,11 @@ import { parseRabbitMQMessage } from './rabbitmq.message';
 export class RabbitMQRetryService {
   private readonly logger = new Logger(RabbitMQRetryService.name);
 
-  handle(
+  async handle(
     context: RmqContext,
     identifier: string | number,
-    handler: () => void,
-  ): void {
+    handler: () => Promise<void> | void,
+  ): Promise<void> {
     const channel = context.getChannelRef() as Channel;
     const msg = context.getMessage() as Message;
     const retryCount = Number(
@@ -21,14 +21,15 @@ export class RabbitMQRetryService {
     );
 
     try {
-      handler();
+      await handler();
 
       channel.ack(msg);
-    } catch {
+    } catch (error) {
       if (retryCount < RABBITMQ_RETRY.MAX_ATTEMPTS) {
         const nextRetry = retryCount + 1;
         this.logger.warn(
           `Message ${identifier} failed. Retrying ${nextRetry} / ${RABBITMQ_RETRY.MAX_ATTEMPTS}`,
+          error instanceof Error ? error.stack : error,
         );
 
         const originalMessage = parseRabbitMQMessage(msg.content);
@@ -51,6 +52,7 @@ export class RabbitMQRetryService {
 
       this.logger.error(
         `Message ${identifier} failed after ${RABBITMQ_RETRY.MAX_ATTEMPTS} attempts. Sending to DLQ.`,
+        error instanceof Error ? error.stack : error,
       );
       channel.nack(msg, false, false);
     }

@@ -1,3 +1,5 @@
-export interface OrderDeletedEvent {
-  orderId: number;
+import { IsInt, IsPositive } from 'class-validator';
+
+export class OrderDeletedEvent {
+  @IsInt() @IsPositive() orderId!: number;
 }

@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { rabbitmqConfig } from './rabbitmq.config';
-import { envValidationSchema } from './validation';
+import { envValidationSchema } from './env.validation';
 
 @Global()
 @Module({

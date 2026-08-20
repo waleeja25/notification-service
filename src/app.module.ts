@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AppConfigModule } from './config/config.module';
-import { NotificationModule } from './notification/notification.module';
+import { AppConfigModule } from './config';
+import { NotificationModule } from './notification';
 
 @Module({
   imports: [AppConfigModule, NotificationModule],

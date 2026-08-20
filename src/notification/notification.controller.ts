@@ -2,10 +2,10 @@ import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 
 import { NotificationService } from './notification.service';
-import { RabbitMQRetryService } from './rabbitmq';
-import { EVENT_TYPES } from './constants/event-type.constants';
+import { RabbitMQRetryService } from '../rabbitmq';
+import { EVENT_TYPES } from './constants';
 
-import type { OrderCreatedEvent, OrderDeletedEvent } from './events';
+import { OrderCreatedEvent, OrderDeletedEvent } from './events';
 
 @Controller()
 export class NotificationController {
@@ -15,20 +15,20 @@ export class NotificationController {
   ) {}
 
   @EventPattern(EVENT_TYPES.ORDER_CREATED)
-  handleOrderCreated(
+  async handleOrderCreated(
     @Payload() event: OrderCreatedEvent,
     @Ctx() context: RmqContext,
-  ): void {
-    this.rabbitMQRetryService.handle(context, event.orderId, () =>
+  ): Promise<void> {
+    await this.rabbitMQRetryService.handle(context, event.orderId, () =>
       this.notificationService.handleOrderCreated(event),
     );
   }
   @EventPattern(EVENT_TYPES.ORDER_DELETED)
-  handleOrderDeleted(
+  async handleOrderDeleted(
     @Payload() event: OrderDeletedEvent,
     @Ctx() context: RmqContext,
-  ): void {
-    this.rabbitMQRetryService.handle(context, event.orderId, () =>
+  ): Promise<void> {
+    await this.rabbitMQRetryService.handle(context, event.orderId, () =>
       this.notificationService.handleOrderDeleted(event),
     );
   }
