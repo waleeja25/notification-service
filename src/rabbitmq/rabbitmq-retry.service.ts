@@ -5,6 +5,10 @@ import type { Channel, Message } from 'amqplib';
 import { RABBITMQ_RETRY } from './rabbitmq.constants';
 import { parseRabbitMQMessage } from './rabbitmq.message';
 
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 @Injectable()
 export class RabbitMQRetryService {
   private readonly logger = new Logger(RabbitMQRetryService.name);
@@ -27,10 +31,14 @@ export class RabbitMQRetryService {
     } catch (error) {
       if (retryCount < RABBITMQ_RETRY.MAX_ATTEMPTS) {
         const nextRetry = retryCount + 1;
+        const backoffMs = RABBITMQ_RETRY.BASE_DELAY_MS * 2 ** retryCount;
+
         this.logger.warn(
-          `Message ${identifier} failed. Retrying ${nextRetry} / ${RABBITMQ_RETRY.MAX_ATTEMPTS}`,
+          `Message ${identifier} failed. Retrying ${nextRetry} / ${RABBITMQ_RETRY.MAX_ATTEMPTS} in ${backoffMs}ms`,
           error instanceof Error ? error.stack : error,
         );
+
+        await delay(backoffMs);
 
         const originalMessage = parseRabbitMQMessage(msg.content);
 
