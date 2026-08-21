@@ -34,8 +34,7 @@ export class RabbitMQRetryService {
         const backoffMs = RABBITMQ_RETRY.BASE_DELAY_MS * 2 ** retryCount;
 
         this.logger.warn(
-          `Message ${identifier} failed. Retrying ${nextRetry} / ${RABBITMQ_RETRY.MAX_ATTEMPTS} in ${backoffMs}ms`,
-          error instanceof Error ? error.stack : error,
+          `Message ${identifier} failed. Retrying ${nextRetry} / ${RABBITMQ_RETRY.MAX_ATTEMPTS} in ${backoffMs}ms: ${error instanceof Error ? error.message : error}`,
         );
 
         await delay(backoffMs);

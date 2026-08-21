@@ -11,11 +11,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  app.connectMicroservice<MicroserviceOptions>(
-    getRabbitMQOptions(configService),
-    { inheritAppConfig: true },
-  );
-
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -28,6 +23,11 @@ async function bootstrap() {
             .join('; '),
         ),
     }),
+  );
+
+  app.connectMicroservice<MicroserviceOptions>(
+    getRabbitMQOptions(configService),
+    { inheritAppConfig: true },
   );
 
   await app.startAllMicroservices();
