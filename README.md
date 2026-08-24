@@ -29,4 +29,4 @@ RABBITMQ_QUEUE=notification_queue
 
 ## Depends on
 
-A running RabbitMQ broker, with `notification_queue` set up with a dead-letter exchange/queue (currently provisioned manually via the RabbitMQ management UI, not by code — recreate this on a fresh broker before relying on the DLQ).
+A running RabbitMQ broker, with `notification_queue` set up with a dead-letter exchange/queue.
