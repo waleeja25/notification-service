@@ -1,6 +1,6 @@
 import * as amqp from 'amqplib';
 
-import { RABBITMQ_DLX } from './rabbitmq.constants';
+import { RABBITMQ_DLX } from './constants';
 
 export async function setupDeadLetterQueue(url: string): Promise<void> {
   const connection = await amqp.connect(url);

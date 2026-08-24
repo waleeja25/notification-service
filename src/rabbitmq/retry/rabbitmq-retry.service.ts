@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { RmqContext } from '@nestjs/microservices';
 import type { Channel, Message } from 'amqplib';
 
-import { RABBITMQ_RETRY } from './rabbitmq.constants';
+import { RABBITMQ_RETRY } from '../constants';
 import { parseRabbitMQMessage } from './rabbitmq.message';
 
 function delay(ms: number): Promise<void> {

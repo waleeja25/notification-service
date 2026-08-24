@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { RmqOptions, Transport } from '@nestjs/microservices';
 
-import { RABBITMQ_DLX } from './rabbitmq.constants';
+import { RABBITMQ_DLX } from './constants';
 
 export function getRabbitMQOptions(configService: ConfigService): RmqOptions {
   return {
