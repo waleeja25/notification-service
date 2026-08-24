@@ -5,7 +5,11 @@ import { NotificationService } from './notification.service';
 import { RabbitMQRetryService } from '../rabbitmq';
 import { EVENT_TYPES } from './constants';
 
-import { OrderCreatedEvent, OrderDeletedEvent } from './events';
+import {
+  OrderCreatedEvent,
+  OrderDeletedEvent,
+  UserCreatedEvent,
+} from './events';
 
 @Controller()
 export class NotificationController {
@@ -30,6 +34,15 @@ export class NotificationController {
   ): Promise<void> {
     await this.rabbitMQRetryService.handle(context, event.orderId, () =>
       this.notificationService.handleOrderDeleted(event),
+    );
+  }
+  @EventPattern(EVENT_TYPES.USER_CREATED)
+  async handleUserCreated(
+    @Payload() event: UserCreatedEvent,
+    @Ctx() context: RmqContext,
+  ): Promise<void> {
+    await this.rabbitMQRetryService.handle(context, event.userId, () =>
+      this.notificationService.handleUserCreated(event),
     );
   }
 }
