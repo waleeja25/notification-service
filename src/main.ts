@@ -6,13 +6,15 @@ import { ValidationError } from 'class-validator';
 import { createAppLogger } from '@microservices/microservice-common';
 
 import { AppModule } from './app.module';
-import { getRabbitMQOptions } from './rabbitmq';
+import { getRabbitMQOptions, setupDeadLetterQueue } from './rabbitmq';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: createAppLogger(),
   });
   const configService = app.get(ConfigService);
+
+  await setupDeadLetterQueue(configService.getOrThrow<string>('rabbitmq.url'));
 
   app.useGlobalPipes(
     new ValidationPipe({
