@@ -1,17 +1,30 @@
 # Notification Service
 
-Consumes `order.created`/`order.deleted` events from RabbitMQ (published by `order-service`) and logs/sends the corresponding notification. This service has no HTTP surface and no database — it's a pure message consumer.
+Consumes `order.created`, `order.deleted`, and `user.created` events from RabbitMQ (published by `order-service` and `user-service`) and logs/sends the corresponding notification. No HTTP surface, no database — a pure message consumer.
 
 ## Message handling
 
-- Payloads are validated with `class-validator` DTOs (`OrderCreatedEvent`/`OrderDeletedEvent`) before reaching the handler.
-- **Malformed message** (fails validation): skips retries entirely and is `nack`'d straight to the dead-letter queue — retrying bad data wouldn't ever succeed.
-- **Handler failure** (e.g. a transient error while processing a valid message): retried up to 3 times with exponential backoff, then sent to the dead-letter queue.
-- Acking is manual (`noAck: false`) — a message is only removed from the queue once it's actually been processed or given up on, not just received.
+- Payloads are validated with `class-validator` DTOs before reaching the handler.
+- **Malformed message**: skips retries and is `nack`'d straight to the dead-letter queue.
+- **Handler failure**: retried with exponential backoff, then dead-lettered if retries are exhausted.
+- Acking is manual (`noAck: false`). The dead-letter exchange/queue/binding are created in code on startup, not provisioned manually.
 
 ## Stack
 
 NestJS, `amqplib` / `@nestjs/microservices` (RabbitMQ), `class-validator`
+
+## Folder structure
+
+```
+src/
+├── notification/           # controller, service, events, event-type constants
+├── rabbitmq/
+│   ├── rabbitmq-options.ts  # consumer connection config
+│   ├── rabbitmq-dlq.ts      # creates the DLX/DLQ on startup
+│   ├── constants/
+│   └── retry/                # retry service, exception filter, message parser
+└── config/
+```
 
 ## Running locally
 
@@ -29,4 +42,4 @@ RABBITMQ_QUEUE=notification_queue
 
 ## Depends on
 
-A running RabbitMQ broker, with `notification_queue` set up with a dead-letter exchange/queue.
+A running RabbitMQ broker.
